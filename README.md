@@ -2,6 +2,8 @@
 
 A free, local-first MVP that collects AI news from public RSS feeds, removes duplicates, ranks stories, and presents a daily briefing. It works immediately in **demo mode**, and becomes AI-enriched when you add a Groq API key.
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/deniselin-dev/signal-ai-briefing)
+
 ## Run locally
 
 Use the bundled Node runtime provided by Codex:
