@@ -1,0 +1,14 @@
+{
+  "name": "signal-ai-briefing",
+  "version": "0.1.0",
+  "private": false,
+  "description": "A local-first daily AI news briefing MVP.",
+  "scripts": {
+    "start": "node server.mjs",
+    "cloudflare:dev": "npx wrangler dev",
+    "cloudflare:deploy": "npx wrangler deploy",
+    "cloudflare:secret:groq": "npx wrangler secret put GROQ_API_KEY",
+    "cloudflare:secret:telegram-token": "npx wrangler secret put TELEGRAM_BOT_TOKEN",
+    "cloudflare:secret:telegram-chat": "npx wrangler secret put TELEGRAM_CHAT_ID"
+  }
+}
