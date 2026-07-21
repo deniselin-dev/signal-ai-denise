@@ -59,13 +59,22 @@ function googleNewsFeed(name, query, authority = 7) {
 }
 
 function buildSources(env) {
-  const watchlist = (env.WATCHLIST || 'Kimi Moonshot,Qwen Alibaba,OpenAI Codex').split(',').map(item => item.trim()).filter(Boolean);
+  const watchlist = (env.WATCHLIST || 'OpenAI,Anthropic Claude,Google Gemini,DeepMind,Meta Llama,Mistral,DeepSeek,Kimi Moonshot,Qwen Alibaba,xAI Grok,NVIDIA AI chips').split(',').map(item => item.trim()).filter(Boolean);
+  const industryFeeds = [
+    googleNewsFeed('AI Industry Front Page', '(artificial intelligence OR generative AI OR foundation model) when:3d', 9),
+    googleNewsFeed('AI Models & Labs', '(OpenAI OR Anthropic OR Claude OR Gemini OR DeepMind OR Llama OR Mistral OR DeepSeek OR Kimi OR Qwen OR Grok) (model OR AI) when:7d', 9),
+    googleNewsFeed('AI Research & Benchmarks', '(AI research OR artificial intelligence benchmark OR frontier model OR multimodal AI) when:7d', 8),
+    googleNewsFeed('AI Agents & Developer Tools', '(AI agents OR coding agents OR AI developer tools OR Copilot OR Cursor OR Codex) when:7d', 8),
+    googleNewsFeed('AI Hardware & Chips', '(AI chips OR GPU OR NVIDIA OR AMD OR inference chip OR TPU OR accelerator) when:7d', 9),
+    googleNewsFeed('AI Data Centers & Power', '(AI data center OR data centre OR AI infrastructure OR energy demand OR power grid OR cooling) when:7d', 9),
+    googleNewsFeed('AI Enterprise Adoption', '(enterprise AI OR AI productivity OR workplace AI OR AI deployment OR AI transformation) when:7d', 9),
+    googleNewsFeed('AI Markets & Capital', '(AI stocks OR AI funding OR AI investment OR AI revenue OR AI valuation OR AI capex) when:7d', 8),
+    googleNewsFeed('AI Policy & Safety', '(AI regulation OR AI safety OR AI governance OR AI copyright OR AI lawsuit) when:7d', 8),
+    googleNewsFeed('AI Startups & Products', '(AI startup OR AI product launch OR AI acquisition OR AI partnership) when:7d', 7)
+  ];
   return [
-    googleNewsFeed('AI Breaking News', 'artificial intelligence when:3d', 8),
-    googleNewsFeed('AI Markets & Capital', '(artificial intelligence OR AI) (markets OR funding OR investment OR stocks) when:3d', 8),
-    googleNewsFeed('AI Hardware & Infrastructure', '(artificial intelligence OR AI) (hardware OR chips OR storage OR data center OR inference) when:3d', 8),
-    googleNewsFeed('AI Enterprise & Productivity', '(artificial intelligence OR AI) (enterprise OR productivity OR deployment OR workforce) when:3d', 8),
-    ...watchlist.map(term => googleNewsFeed(`Watchlist: ${term}`, `${term} artificial intelligence when:30d`, 8)),
+    ...industryFeeds,
+    ...watchlist.map(term => googleNewsFeed(`Priority Watch: ${term}`, `${term} (AI OR artificial intelligence OR model OR chips OR enterprise) when:30d`, 7)),
     { name: 'OpenAI News', url: 'https://openai.com/news/rss.xml', authority: 10 },
     { name: 'Hugging Face Blog', url: 'https://huggingface.co/blog/feed.xml', authority: 9 },
     { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/', authority: 8 },
@@ -103,7 +112,7 @@ function parseFeed(xml, source) {
 }
 
 async function groqEnrich(env, item) {
-  const prompt = `You are the editor of an AI intelligence briefing for a business reader. Include only stories that materially affect AI: model or research breakthroughs; AI hardware, chips, storage, data centers or inference; AI markets, funding, public-company impact or capital; enterprise deployment, product adoption, workforce or measurable productivity; and policy/safety. Exclude generic tech or marketing news. Write a factual news brief, never a vague overview. The first sentence MUST name the central company, model, product, or organization from the source title and say exactly what happened. Include concrete details from the source when available. Do not invent facts. Return ONLY JSON with isAI (boolean), summary (an array of exactly 3 concise sentences), why (one specific sentence), topics (array chosen from Models, Research, Policy, Safety, Agents, Open source, Developer tools, Startups, Markets, Hardware, Infrastructure, Enterprise, Productivity), importance (0-10), marketImpact (0-10), enterpriseImpact (0-10), breakthrough (0-10).\nSOURCE HEADLINE: ${item.title}\nSOURCE TEXT: ${(item.raw || '').slice(0, 4500)}`;
+  const prompt = `You are the editor of an AI intelligence briefing for a business reader who wants the whole AI industry, not a narrow model-watch feed. Include stories that materially affect AI: frontier and open models; research benchmarks; multimodal AI; agents and developer tools; AI chips, GPUs, storage, data centers, power and inference infrastructure; enterprise deployment, product adoption, workforce and productivity; startup funding, acquisitions, partnerships, public-company revenue, market impact and capex; policy, safety, copyright and lawsuits. Exclude generic tech, pure marketing, and articles where AI is only a buzzword. Write a factual news brief, never a vague overview. The first sentence MUST name the central company, model, product, organization, market, or infrastructure asset from the source title and say exactly what happened. Include concrete details from the source when available. Do not invent facts. Return ONLY JSON with isAI (boolean), summary (an array of exactly 3 concise sentences), why (one specific sentence), topics (array chosen from Models, Research, Multimodal, Policy, Safety, Agents, Open source, Developer tools, Startups, Markets, Hardware, Infrastructure, Data centers, Enterprise, Productivity), importance (0-10), marketImpact (0-10), enterpriseImpact (0-10), breakthrough (0-10).\nSOURCE HEADLINE: ${item.title}\nSOURCE TEXT: ${(item.raw || '').slice(0, 4500)}`;
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${env.GROQ_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: env.GROQ_MODEL || GROQ_MODEL_DEFAULT, temperature: 0.2, response_format: { type: 'json_object' }, messages: [{ role: 'user', content: prompt }] }) });
   if (!response.ok) throw new Error(`Groq ${response.status}`);
   const body = await response.json();
@@ -122,9 +131,10 @@ function heuristicEnrich(item) {
   if (/open.source|open.weight/.test(text)) topics.push('Open source');
   if (/agent/.test(text)) topics.push('Agents');
   if (/startup|funding|raise/.test(text)) topics.push('Startups');
-  if (/chip|gpu|hardware|storage|ssd|data center|inference/.test(text)) topics.push('Hardware');
+  if (/chip|gpu|hardware|storage|ssd|data center|data centre|power|energy|cooling|inference/.test(text)) topics.push('Hardware');
   if (/market|stock|funding|investment|valuation|revenue/.test(text)) topics.push('Markets');
   if (/enterprise|productivity|deploy|workforce/.test(text)) topics.push('Enterprise');
+  if (/multimodal|video|image|voice|audio|vision/.test(text)) topics.push('Multimodal');
   return { ...item, isAI, topics: topics.length ? topics : ['AI'], summary: (item.raw || item.title).slice(0, 300), why: 'Selected for freshness and AI relevance.', importance: 5, marketImpact: topics.includes('Markets') ? 6 : 0, enterpriseImpact: topics.includes('Enterprise') ? 6 : 0, breakthrough: topics.includes('Hardware') || topics.includes('Research') ? 5 : 0 };
 }
 

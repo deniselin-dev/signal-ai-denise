@@ -67,8 +67,9 @@ Only `GROQ_API_KEY` is required for AI summaries. Telegram secrets are optional 
 ## Notes
 
 - RSS is deliberately preferred over unrestricted scraping: it is more reliable and considerate of publishers.
-- Current free sources: OpenAI News, Hugging Face Blog, MIT Technology Review, Google AI Updates, Ars Technica AI, TechCrunch AI, broad Google News AI feeds, and targeted Google News RSS watchlists. No news API key is required.
+- Current free sources: OpenAI News, Hugging Face Blog, MIT Technology Review, Google AI Updates, Ars Technica AI, TechCrunch AI, broad Google News AI feeds, and targeted Google News RSS priority watches. No news API key is required.
+- The default coverage is broad by design: models and labs, research benchmarks, multimodal AI, agents and developer tools, chips, data centers, power, inference infrastructure, enterprise adoption, productivity, funding, markets, policy, safety, and lawsuits.
 - The ranking is intentionally business-aware: it favors material breakthroughs plus market impact, AI hardware/infrastructure, enterprise adoption, and demonstrated productivity effects.
-- Edit `WATCHLIST` in `YOUR_API_KEYS.env` to prioritize companies or topics you care about; it defaults to Kimi Moonshot, Qwen Alibaba, and OpenAI Codex.
+- Edit `WATCHLIST` in `YOUR_API_KEYS.env` to boost specific companies, models, or topics you care about. It is a "do not miss" list, not a limit on coverage.
 - The app includes a transparent fallback summarizer so it remains usable without an LLM; it labels that state clearly.
 - Never commit `.env`.
