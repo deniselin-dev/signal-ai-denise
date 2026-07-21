@@ -1,0 +1,19 @@
+{
+  "name": "signal-ai-denise",
+  "version": "0.1.0",
+  "private": false,
+  "description": "A local-first daily AI news briefing MVP.",
+  "scripts": {
+    "start": "node server.mjs",
+    "cloudflare:dev": "npx wrangler dev",
+    "cloudflare:deploy": "npx wrangler deploy",
+    "cloudflare:secret:groq": "npx wrangler secret put GROQ_API_KEY"
+  },
+  "cloudflare": {
+    "bindings": {
+      "GROQ_API_KEY": {
+        "description": "Groq API key used to filter, rank, and summarize AI news."
+      }
+    }
+  }
+}

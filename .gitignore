@@ -1,0 +1,10 @@
+.env
+.env*
+!.env.example
+.dev.vars*
+!.dev.vars.example
+YOUR_API_KEYS.env
+.DS_Store
+data/digest.json
+node_modules
+.deploy_key/
