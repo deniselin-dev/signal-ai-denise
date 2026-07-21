@@ -21,7 +21,7 @@ Copy `.env.example` to `.env` and add only the credentials you want:
 | Feature | Required value | Where to get it |
 | --- | --- | --- |
 | AI relevance and summaries | `GROQ_API_KEY` | Groq Console API Keys |
-| Telegram delivery | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Create a bot via @BotFather; send it a message, then get your chat ID |
+| Telegram delivery | Add later, after deploy | Create a bot via @BotFather; send it a message, then get your chat ID |
 
 The default `GROQ_MODEL` is `llama-3.1-8b-instant`, selected for low-cost relevance filtering and concise summaries. It is configurable so the app can be moved to a newer low-cost Groq model later without code changes.
 

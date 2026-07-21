@@ -30,13 +30,6 @@ Required:
 GROQ_API_KEY
 ```
 
-Optional later for Telegram delivery:
-
-```txt
-TELEGRAM_BOT_TOKEN
-TELEGRAM_CHAT_ID
-```
-
 Already configured as non-secret settings:
 
 ```txt

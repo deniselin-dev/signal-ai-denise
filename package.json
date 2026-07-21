@@ -7,9 +7,7 @@
     "start": "node server.mjs",
     "cloudflare:dev": "npx wrangler dev",
     "cloudflare:deploy": "npx wrangler deploy",
-    "cloudflare:secret:groq": "npx wrangler secret put GROQ_API_KEY",
-    "cloudflare:secret:telegram-token": "npx wrangler secret put TELEGRAM_BOT_TOKEN",
-    "cloudflare:secret:telegram-chat": "npx wrangler secret put TELEGRAM_CHAT_ID"
+    "cloudflare:secret:groq": "npx wrangler secret put GROQ_API_KEY"
   },
   "cloudflare": {
     "bindings": {
