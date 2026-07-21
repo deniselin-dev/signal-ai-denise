@@ -21,7 +21,7 @@ export default {
     }
 
     if (url.pathname === '/api/status') {
-      return json({ groq: Boolean(env.GROQ_API_KEY), telegram: Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) }, 200, headers);
+      return json({ groq: Boolean(env.GROQ_API_KEY), telegram: hasTelegram(env) }, 200, headers);
     }
 
     if (url.pathname === '/api/refresh' && request.method === 'POST') {
@@ -49,7 +49,7 @@ export default {
     ctx.waitUntil((async () => {
       const digest = await refreshDigest(env);
       digestCache = digest;
-      if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) await sendTelegram(env, digest);
+      if (hasTelegram(env)) await sendTelegram(env, digest);
     })());
   }
 };
@@ -151,9 +151,15 @@ function makeDigest(items, demo = false, sources = buildSources({})) {
 }
 
 async function sendTelegram(env, data) {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) throw new Error('Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID first.');
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: telegramText(data), parse_mode: 'Markdown', disable_web_page_preview: true }) });
+  const token = cleanOptionalSecret(env.TELEGRAM_BOT_TOKEN);
+  const chatId = cleanOptionalSecret(env.TELEGRAM_CHAT_ID);
+  if (!token || !chatId) throw new Error('Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID first.');
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: telegramText(data), parse_mode: 'Markdown', disable_web_page_preview: true }) });
   if (!response.ok) throw new Error(`Telegram ${response.status}`);
+}
+
+function hasTelegram(env) {
+  return Boolean(cleanOptionalSecret(env.TELEGRAM_BOT_TOKEN) && cleanOptionalSecret(env.TELEGRAM_CHAT_ID));
 }
 
 function telegramText(data) {
@@ -170,4 +176,8 @@ function isoHoursAgo(hours) { return new Date(Date.now() - hours * 3600000).toIS
 function isOlderThan(date, hours) { return (Date.now() - new Date(date).getTime()) > hours * 3600000; }
 function dedupeKey(title) { return title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 80); }
 function stripHtml(s = '') { return s.replace(/<[^>]*>/g, ' ').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim(); }
+function cleanOptionalSecret(value = '') {
+  const trimmed = String(value).trim();
+  return /^(|n\/a|na|none|null|undefined)$/i.test(trimmed) ? '' : trimmed;
+}
 function json(body, status = 200, headers = {}) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...headers } }); }

@@ -54,15 +54,13 @@ Deploy with:
 npm run cloudflare:deploy
 ```
 
-Then add secrets in Cloudflare:
+Then add the Groq secret in Cloudflare:
 
 ```sh
 npm run cloudflare:secret:groq
-npm run cloudflare:secret:telegram-token
-npm run cloudflare:secret:telegram-chat
 ```
 
-Only `GROQ_API_KEY` is required for AI summaries. Telegram secrets are optional unless you want the daily message delivered to Telegram.
+Only `GROQ_API_KEY` is required for AI summaries. Telegram secrets are optional and should be skipped until you actually create a Telegram bot.
 
 ## Notes
 

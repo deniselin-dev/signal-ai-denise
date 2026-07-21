@@ -30,7 +30,7 @@ Required:
 GROQ_API_KEY
 ```
 
-Optional for Telegram delivery:
+Optional later for Telegram delivery:
 
 ```txt
 TELEGRAM_BOT_TOKEN
@@ -68,6 +68,6 @@ Then add the secrets:
 
 ```sh
 npm run cloudflare:secret:groq
-npm run cloudflare:secret:telegram-token
-npm run cloudflare:secret:telegram-chat
 ```
+
+Skip Telegram secrets until you intentionally set up a Telegram bot.

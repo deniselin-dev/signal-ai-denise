@@ -15,12 +15,6 @@
     "bindings": {
       "GROQ_API_KEY": {
         "description": "Groq API key used to filter, rank, and summarize AI news."
-      },
-      "TELEGRAM_BOT_TOKEN": {
-        "description": "Optional Telegram bot token for sending the daily briefing."
-      },
-      "TELEGRAM_CHAT_ID": {
-        "description": "Optional Telegram chat ID for receiving the daily briefing."
       }
     }
   }

@@ -9,8 +9,8 @@ loadEnv(path.join(root, 'YOUR_API_KEYS.env'));
 const PORT = Number(process.env.PORT || 4173);
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const TELEGRAM_BOT_TOKEN = cleanOptionalSecret(process.env.TELEGRAM_BOT_TOKEN);
+const TELEGRAM_CHAT_ID = cleanOptionalSecret(process.env.TELEGRAM_CHAT_ID);
 const WATCHLIST = (process.env.WATCHLIST || 'OpenAI,Anthropic Claude,Google Gemini,DeepMind,Meta Llama,Mistral,DeepSeek,Kimi Moonshot,Qwen Alibaba,xAI Grok,NVIDIA AI chips').split(',').map(item => item.trim()).filter(Boolean);
 
 function googleNewsFeed(name, query, authority = 7) {
@@ -62,6 +62,10 @@ function loadEnv(file) {
 function isoHoursAgo(hours) { return new Date(Date.now() - hours * 3600000).toISOString(); }
 function escapeHtml(s = '') { return s.replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c])); }
 function stripHtml(s = '') { return s.replace(/<[^>]*>/g, ' ').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim(); }
+function cleanOptionalSecret(value = '') {
+  const trimmed = String(value).trim();
+  return /^(|n\/a|na|none|null|undefined)$/i.test(trimmed) ? '' : trimmed;
+}
 
 function rank(item, interests = []) {
   const ageHours = (Date.now() - new Date(item.publishedAt).getTime()) / 3600000;
