@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "signal-ai-briefing",
+  "name": "signal-ai-denise",
   "main": "src/worker.mjs",
   "compatibility_date": "2026-07-20",
   "assets": {
