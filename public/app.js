@@ -5,16 +5,27 @@ function renderMore(item, i) { const e = document.createElement('article'); e.cl
 function safe(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 function setStatus(text, type = '') { const status = $('#status'); status.textContent = text; status.className = `status ${type}`.trim(); }
 function renderEmpty(message) { const e = document.createElement('article'); e.className = 'empty'; e.textContent = message; return e; }
-async function getJson(url) { const response = await fetch(url, { cache: 'no-store' }); if (!response.ok) throw new Error(`${url} returned ${response.status}`); return response.json(); }
+async function getJson(url, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error(`${url} returned ${response.status}`);
+    return response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
 async function load() {
   try {
-    const [d, s] = await Promise.all([getJson('/api/digest'), getJson('/api/status')]);
+    const s = await getJson('/api/status', 5000);
+    setStatus(s.groq ? 'Groq connected' : 'Demo mode · Groq optional', s.groq ? 'live' : '');
+    const d = await getJson('/api/digest', 12000);
     const trending = Array.isArray(d.trending) ? d.trending : [];
     const moreItems = Array.isArray(d.more) ? d.more : [];
     $('#date').textContent = new Intl.DateTimeFormat('en', { weekday:'long', month:'long', day:'numeric' }).format(new Date(d.generatedAt || Date.now()));
     $('#provider').textContent = d.demo ? 'Demo briefing' : `${d.provider || 'AI'} enriched`;
     $('#count').textContent = `${trending.length + moreItems.length} selected stories`;
-    setStatus(s.groq ? 'Groq connected' : 'Demo mode · Groq optional', s.groq ? 'live' : '');
     $('#trending').replaceChildren(...(trending.length ? trending.map(renderCard) : [renderEmpty('No top stories yet. Try Refresh sources.')]));
     $('#more').replaceChildren(...(moreItems.length ? moreItems.map(renderMore) : [renderEmpty('No additional stories yet.')]));
   } catch (e) {

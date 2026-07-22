@@ -9,13 +9,13 @@ const demoItems = [
 let digestCache = makeDigest(demoItems, true);
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const headers = { 'Cache-Control': 'no-store' };
 
     if (url.pathname === '/api/digest') {
       if (digestCache.demo || isOlderThan(digestCache.generatedAt, 12)) {
-        try { digestCache = await refreshDigest(env); } catch {}
+        ctx.waitUntil(refreshDigest(env).then(digest => { digestCache = digest; }).catch(() => {}));
       }
       return json(digestCache, 200, headers);
     }
