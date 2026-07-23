@@ -1,8 +1,17 @@
 const $ = s => document.querySelector(s);
 const ago = date => { const h = Math.max(0, Math.round((Date.now() - new Date(date)) / 36e5)); return h < 1 ? 'Just now' : `${h}h ago`; };
-function renderCard(item, i) { const n = $('#trend-card').content.cloneNode(true); n.querySelector('.pill').textContent = i === 0 ? '★ Lead story' : `Trending ${i + 1}`; n.querySelector('.score').textContent = `${item.score}/100`; n.querySelector('h3').textContent = item.title; n.querySelector('.summary').textContent = item.summary; n.querySelector('.why span').textContent = item.why; n.querySelector('.source').textContent = item.source; n.querySelector('time').textContent = ago(item.publishedAt); const a = n.querySelector('a'); a.href = item.url; return n; }
-function renderMore(item, i) { const e = document.createElement('article'); e.className = 'more-item'; e.innerHTML = `<span class="number">0${i + 4}</span><div><h3>${safe(item.title)}</h3><p>${safe(item.summary)}</p></div><a href="${safe(item.url)}" target="_blank" rel="noreferrer">Read source ↗</a>`; return e; }
+function renderCard(item, i) { const n = $('#trend-card').content.cloneNode(true); n.querySelector('.pill').textContent = i === 0 ? '★ Lead story' : `Trending ${i + 1}`; n.querySelector('.score').textContent = `${item.score}/100`; n.querySelector('h3').textContent = cleanText(item.title); n.querySelector('.summary').textContent = cleanText(item.summary); n.querySelector('.why span').textContent = cleanText(item.why); n.querySelector('.source').textContent = item.source; n.querySelector('time').textContent = ago(item.publishedAt); const a = n.querySelector('a'); a.href = item.url; return n; }
+function renderMore(item, i) { const e = document.createElement('article'); e.className = 'more-item'; e.innerHTML = `<span class="number">0${i + 4}</span><div><h3>${safe(cleanText(item.title))}</h3><p>${safe(cleanText(item.summary))}</p></div><a href="${safe(item.url)}" target="_blank" rel="noreferrer">Read source ↗</a>`; return e; }
 function safe(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function cleanText(value = '') {
+  return String(value)
+    .replace(/\b(isn|aren|wasn|weren|doesn|don|didn|hasn|haven|hadn|couldn|wouldn|shouldn|mustn|needn) t\b/gi, "$1't")
+    .replace(/\b(can) t\b/gi, "$1't")
+    .replace(/\b(won) t\b/gi, "$1't")
+    .replace(/\bwont\b/gi, "won't")
+    .replace(/\bcant\b/gi, "can't")
+    .replace(/\bdont\b/gi, "don't");
+}
 function setStatus(text, type = '') { const status = $('#status'); status.textContent = text; status.className = `status ${type}`.trim(); }
 function renderEmpty(message) { const e = document.createElement('article'); e.className = 'empty'; e.textContent = message; return e; }
 async function getJson(url, timeoutMs = 12000) {

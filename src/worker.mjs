@@ -119,6 +119,8 @@ async function groqEnrich(env, item) {
   const generated = JSON.parse(body.choices[0].message.content);
   if (Array.isArray(generated.summary)) generated.summary = generated.summary.join(' ');
   if (Array.isArray(generated.why)) generated.why = generated.why.join(' ');
+  generated.summary = cleanText(generated.summary);
+  generated.why = cleanText(generated.why);
   return { ...item, ...generated, title: item.title };
 }
 
@@ -175,7 +177,27 @@ function telegramText(data) {
 function isoHoursAgo(hours) { return new Date(Date.now() - hours * 3600000).toISOString(); }
 function isOlderThan(date, hours) { return (Date.now() - new Date(date).getTime()) > hours * 3600000; }
 function dedupeKey(title) { return title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 80); }
-function stripHtml(s = '') { return s.replace(/<[^>]*>/g, ' ').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim(); }
+function decodeEntities(s = '') {
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&(apos|#39|rsquo|lsquo);/gi, "'")
+    .replace(/&(quot|ldquo|rdquo);/gi, '"')
+    .replace(/&(amp);/gi, '&')
+    .replace(/&(nbsp);/gi, ' ');
+}
+function cleanText(s = '') {
+  return decodeEntities(s)
+    .replace(/\b(isn|aren|wasn|weren|doesn|don|didn|hasn|haven|hadn|couldn|wouldn|shouldn|mustn|needn) t\b/gi, "$1't")
+    .replace(/\b(can) t\b/gi, "$1't")
+    .replace(/\b(won) t\b/gi, "$1't")
+    .replace(/\bwont\b/gi, "won't")
+    .replace(/\bcant\b/gi, "can't")
+    .replace(/\bdont\b/gi, "don't")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function stripHtml(s = '') { return cleanText(decodeEntities(s).replace(/<[^>]*>/g, ' ').replace(/&[^;]+;/g, ' ')); }
 function cleanOptionalSecret(value = '') {
   const trimmed = String(value).trim();
   return /^(|n\/a|na|none|null|undefined)$/i.test(trimmed) ? '' : trimmed;
